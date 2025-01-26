@@ -34,7 +34,10 @@ Para fixar os conhecimentos adquiridos durante o Módulo 3: Fundamentos de Docke
 
 - Selecione Create VPC, para criar a vpc e finalizar esta etapa
 
-### 1.3 Visualização da VPC
+### 1.3 Visualização da VPC 
+Preview da VPC após as configurações
+
+![VPC](imagens-aws/vpcAndMore.JPG)
 
 ## 2. Crie um Internet Gateway
 - Em VPC, selecione Internet Gateways
