@@ -66,7 +66,7 @@ Preview da VPC após as configurações
 - Selecione a rota ligada as public subnet
 
   -  Em seguida vá para route e selecione edit
-  -  Adicione uma rota 0.0.0.0/0 para as public subnets
+  -  Adicione uma rota 0.0.0.0/0 (Todo tráfego)
   -  Associe as public subnet ao Target: Internet Gateway
   -  Clique em Save Changes
 
@@ -74,7 +74,7 @@ Preview da VPC após as configurações
 
   -  Vá para route e selecione edit
   -  Adicione uma rota 0.0.0.0/0 (Todo tráfego)
-  -  Associe as public subnet ao Target: NAT Gateway criado anteriormente
+  -  Associe as privatw subnet ao Target: NAT Gateway criado anteriormente
   -  Clique em Save Changes
 
 ## 5. Configurar os Security Groups
