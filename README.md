@@ -12,6 +12,7 @@ Para fixar os conhecimentos adquiridos durante o Módulo 3: Fundamentos de Docke
 3. [Criar NAT Gateway](#3Configurar-um-nat-gateway)
 4. [Configurar Route Tables](#4Configurar-a-tabela-de-rotas)
 5. [Security Groups](#5Configurar-security-Groups)
+6. [EFS](#6-configurar-efs)
 
 
 
@@ -78,7 +79,33 @@ Preview da VPC após as configurações
   -  Clique em Save Changes
 
 ## 5. Configurar os Security Groups
-### 
+Digite EC2 na área de busca e clique em security groups
+### 5.1 Criar 2 Security Groups
+- Clique em create security groups
+- Digite o nome do seu security group
+- Selecione a vpc criada
+
+   - Entrada/ Inbound:
+        -  HTTP : Source Anwhere-IPv4-0.0.0.0/0
+        -  SSH: Source Anwhere-IPv4-0.0.0.0/0
+        -  MYSQL/Aurora Source Anwhere-IPv4-0.0.0.0/0
+        -  NFS: Source Anwhere-IPv4-0.0.0.0/0
+
+   -  Saída Outbound:
+       	- All traffic - 0.0.0.0/0
+        
+- Crie o segundo security group
+   - Entrada/ Inbound:
+        -  HTTP : Source Anwhere-IPv4-0.0.0.0/0
+        -  SSH: Source Custom -> public-security-group
+   
+   -  Saída Outbound:
+       	- All traffic - 0.0.0.0/0
+
+  ## 6. EFS
+  
+      
+  
 
   
     
