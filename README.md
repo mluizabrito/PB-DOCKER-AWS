@@ -6,7 +6,9 @@ Para fixar os conhecimentos adquiridos durante o Módulo 3: Fundamentos de Docke
 ### Objetivo Principal
 - Efetuar o deploy de uma aplicação Wordpress em uma instância EC2 na AWS, utilizando Docker e Docker Compose.
 - O projeto deve seguir a arquitetura abaixo.
-![ARQUITETURA](imagens-aws/arquitetura.JPG)
+
+
+[ARQUITETURA](imagens-aws/arquitetura.JPG)
   
 
 ## Índice
