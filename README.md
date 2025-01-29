@@ -5,6 +5,9 @@ Para fixar os conhecimentos adquiridos durante o Módulo 3: Fundamentos de Docke
 
 ### Objetivo Principal
 - Efetuar o deploy de uma aplicação Wordpress em uma instância EC2 na AWS, utilizando Docker e Docker Compose.
+- O projeto deve seguir a arquitetura abaixo.
+![ARQUITETURA](imagens-aws/arquitetura.JPG)
+  
 
 ## Índice
 1. [Configurar uma VPC](#1-Criar-uma-VPC)
@@ -12,7 +15,10 @@ Para fixar os conhecimentos adquiridos durante o Módulo 3: Fundamentos de Docke
 3. [Criar NAT Gateway](#3Configurar-um-nat-gateway)
 4. [Configurar Route Tables](#4Configurar-a-tabela-de-rotas)
 5. [Security Groups](#5Configurar-security-Groups)
-6. [EFS](#6-configurar-efs)
+6. [RDS](#6-create-rds)
+7. [EFS](#7-configurar-efs)
+8. [Criação das Instâncias](#8-intancia).
+9. [Load Balancer](#9-lb)
 
 
 
@@ -80,29 +86,85 @@ Preview da VPC após as configurações
 
 ## 5. Configurar os Security Groups
 Digite EC2 na área de busca e clique em security groups
-### 5.1 Criar 2 Security Groups
 - Clique em create security groups
-- Digite o nome do seu security group
-- Selecione a vpc criada
+- Digite o nome do seu security group: (nome do seu sg)
+- Selecione a vpc criada anteriormente
 
+### 5.1 Criar Security Groups do RDS (Relational Database Service)
    - Entrada/ Inbound:
-        -  HTTP : Source Anwhere-IPv4-0.0.0.0/0
-        -  SSH: Source Anwhere-IPv4-0.0.0.0/0
-        -  MYSQL/Aurora Source Anwhere-IPv4-0.0.0.0/0
+        -  MYSQL/Aurora: Port Range 3306 | Source Anwhere-IPv4-0.0.0.0/0
         -  NFS: Source Anwhere-IPv4-0.0.0.0/0
-
    -  Saída Outbound:
        	- All traffic - 0.0.0.0/0
-        
-- Crie o segundo security group
-   - Entrada/ Inbound:
-        -  HTTP : Source Anwhere-IPv4-0.0.0.0/0
-        -  SSH: Source Custom -> public-security-group
+
+### 5.2 Crie security group EFS (Elastic File System)
+  - Entrada/ Inbound:
+        - NFS: Port Range 2049 | Source Anwhere-IPv4-0.0.0.0/0
+  -  Saída Outbound:
+       	- All traffic - 0.0.0.0/0
+
+### 5.3 Crie security group Load Balancer 
+  - Entrada/ Inbound:
+        -  HTTP: Port Range 80 |  Source Anwhere-IPv4-0.0.0.0/0
+  -  Saída Outbound:
+        - All traffic - 0.0.0.0
+
+### 5.4 Crie o security group EC2
+  - Entrada/ Inbound:
+        -  HTTP: Port Range 80 |  Source Anwhere-IPv4-0.0.0.0/0
+        -  NFS: Port Range 2049 | Source Anwhere-IPv4-0.0.0.0/0
+        -  MYSQL/Aurora: Port Range 3306 | Source Anwhere-IPv4-0.0.0.0/0
    
-   -  Saída Outbound:
-       	- All traffic - 0.0.0.0/0
+  -  Saída Outbound:
+        - All traffic - 0.0.0.0
 
-  ## 6. EFS
+
+## 6. RDS-Amazon Relational Database Service
+
+- Digite RDS na área de busca e clique em RDS
+- Clique em create database  e escolha em Engine options: MySQL
+- Em templates, selecione Free tier
+- Settings:
+  - Nome do seu banco
+  - Credential settings:
+    - Master username
+    - Materpassword
+- Instance configuration: db.t3.micro
+- Connectivity:
+   - VPC: escolha a vpc criada anteriormente
+   - VPC security group: escolha RDS
+- Public Acess: NO
+- Additional configuration
+   - Database name: database
+- Selecione create database
+- Copie e guarde o endpoint
+
+## 7. EFS (Elastic File System)
+- Digite EFS na área de busca e clique em EFS
+- Clique em create file system
+  - Digite um nome
+  - Selecione a vpc
+  - Clique em create
+- Em network, selecione manage
+   - Em mount target, selecione nas duas subnets o security group -> EFS
+- Copie o DNS name do EFS e guarde em algum editor de texto.
+
+## 8. Criação das instâncias EC2
+É necessário criar duas instâncias para essse projeto
+### 8.1 Instância em subnet pública
+
+
+### 8.2 Instância em subnet privada
+
+## 9. Load balancer
+- Digite EC2 na área de busca e clique em Load balancers
+- Acesse create Application Load Balancer
+  - Em Network mapping
+       -Selecione a vpc e as duas subnets públicas
+  - Em Security Groups escolha o LoadBalancer
+
+
+  
   
       
   
