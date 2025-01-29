@@ -8,7 +8,7 @@ Para fixar os conhecimentos adquiridos durante o Módulo 3: Fundamentos de Docke
 - O projeto deve seguir a arquitetura abaixo.
 
 
-[ARQUITETURA](imagens-aws/arquitetura.JPG)
+![ARQUITETURA](imagens-aws/arquitetura.JPG)
   
 
 ## Índice
