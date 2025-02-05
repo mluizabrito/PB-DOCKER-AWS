@@ -197,25 +197,63 @@ Conecte-se ao Bastion Host(Instância pública) via PuTTY
 ``` bash
 ssh -i "nome-da-chave.pem" usuariod@endereco-ip-privado
 ```
-- Ao acessar a a instância privada execute os comandos abaixos para Atualizar o sistema e instalar o docker
-``` bash
-yum update -y
-yum install -y docker
-```
-- 
+- Ao acessar a a instância privada execute os comandos abaixos para instalar o docker e docker compose
 ```bash
-yum install -y docker
+# Atualiza pacotes e instala Docker e NFS
+sudo yum update -y
+sudo yum install -y docker nfs-utils curl
 
-# Inicia e habilita o Docker
-systemctl start docker
-systemctl enable docker
+# Inicia Docker e adiciona o usuário ao grupo
+sudo systemctl enable --now docker
+sudo usermod -aG docker $USER
 
-# Verifica a instalação do Docker deu certo
-docker --version
-````
-- 
+# Instala Docker Compose
+VERSION=$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)
+sudo curl -L "https://github.com/docker/compose/releases/download/$VERSION/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-composee
+```
+- Após isso, monte o EFS
+```bash
+sudo mkdir -p /mnt/efs
+sudo mount -t nfs4 SEU_EFS_ENDPOINT(Salvo no tópico 7):/ /mnt/efs
+```
+- Instale o MariaDB substituto do MySQL no Amazon Linux 2023
+```bash
+sudo dnf install mariadb105 -y
+```
+- Crie um diretório para o wordpress
+```bash
+mkdir -p /Wordpress
+cd /Wordpress
+```
+- Crie o arquivo docker-compose.yaml
+```bash
+nano docker-compose.yml
+version: '3.8'
 
-
+services:
+  wordpress:
+    image: wordpress:latest
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      WORDPRESS_DB_HOST: #EndPOINT RDS
+      WORDPRESS_DB_USER: #User Do RDS
+      WORDPRESS_DB_PASSWORD: #Senha do RDS
+      WORDPRESS_DB_NAME:  #Nome do banco do RDS
+      - /mnt/efs:/var/www/html
+```
+- Inicie o Container
+```bash
+docker-compose up -d
+```
+- Verifique a conexão do Worpress com o DB
+```bash
+mysql -h endpoint-do-rds -u usuario-do-db -p
+SHOW DATABASES;
+#Se tudo está funcionando deve mostrar o nome do banco RDS
+```
 
 ## 9. Load balancer
 - Digite EC2 na área de busca e clique em Load balancers
