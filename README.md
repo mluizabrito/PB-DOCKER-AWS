@@ -93,44 +93,52 @@ Digite EC2 na área de busca e clique em security groups
 - Selecione a vpc criada anteriormente
 
 ### 5.1 Criar Security Groups do RDS (Relational Database Service)
-   - Entrada/ Inbound:
-        -  MYSQL/Aurora: Port Range 3306 | Source Anwhere-IPv4-0.0.0.0/0
-        -  NFS: Source Anwhere-IPv4-0.0.0.0/0
-   -  Saída Outbound:
-       	- All traffic - 0.0.0.0/0
+- Entrada/ Inbound:
+   - MYSQL/Aurora: Port Range 3306 | Source Anwhere-IPv4-0.0.0.0/0
+   - NFS: Source Anwhere-IPv4-0.0.0.0/0
+- Saída Outbound:
+   - All traffic - 0.0.0.0/0
 
 ### 5.2 Crie security group EFS (Elastic File System)
-  - Entrada/ Inbound:
-        - NFS: Port Range 2049 | Source Anwhere-IPv4-0.0.0.0/0
-  -  Saída Outbound:
-       	- All traffic - 0.0.0.0/0
+- Entrada/ Inbound:
+  - NFS: Port Range 2049 | Source Anwhere-IPv4-0.0.0.0/0
+- Saída Outbound:
+  - All traffic - 0.0.0.0/0
 
 ### 5.3 Crie security group Load Balancer 
-  - Entrada/ Inbound:
-        -  HTTP: Port Range 80 |  Source Anwhere-IPv4-0.0.0.0/0
-  -  Saída Outbound:
-        - All traffic - 0.0.0.0
+- Entrada/ Inbound:
+  - HTTP: Port Range 80 |  Source Anwhere-IPv4-0.0.0.0/0
+- Saída Outbound:
+  - All traffic - 0.0.0.0
 
 ### 5.4 Crie o security group EC2
-  - Entrada/ Inbound:
-        -  HTTP: Port Range 80 |  Source Anwhere-IPv4-0.0.0.0/0
-        -  NFS: Port Range 2049 | Source Anwhere-IPv4-0.0.0.0/0
-        -  MYSQL/Aurora: Port Range 3306 | Source Anwhere-IPv4-0.0.0.0/0
-   
-  -  Saída Outbound:
-        - All traffic - 0.0.0.0
+- Entrada/ Inbound:
+  - HTTP: Port Range 80 |  Source Anwhere-IPv4-0.0.0.0/0
+  - NFS: Port Range 2049 | Source Anwhere-IPv4-0.0.0.0/0
+  - MYSQL/Aurora: Port Range 3306 | Source Anwhere-IPv4-0.0.0.0/0
+  - SSH: Port Range 22 | Source: Custom my IP
 
+- Saída Outbound:
+  - All traffic - 0.0.0.0
+
+### 5.5 Crie o security group EC2-Private
+- Entrada/ Inbound:
+  - HTTP: Port Range 80 |  Source: Custom sg-LoadBalancer
+  - Custom TCP: Port Range 8000|  Source: Custom sg-EC2
+  - SSH: Port Range 22 | Source: Custom sg-EC2
+  
+- Saída Outbound:
+  - All traffic - 0.0.0.0
 
 ## 6. RDS-Amazon Relational Database Service
-
 - Digite RDS na área de busca e clique em RDS
 - Clique em create database  e escolha em Engine options: MySQL
 - Em templates, selecione Free tier
 - Settings:
   - Nome do seu banco
   - Credential settings:
-    - Master username
-    - Materpassword
+    - Master username (Guarde user, name, password do DB, esses dados vão ser utilizados na configuração da instância) 
+    - Materpassword 
 - Instance configuration: db.t3.micro
 - Connectivity:
    - VPC: escolha a vpc criada anteriormente
@@ -152,11 +160,62 @@ Digite EC2 na área de busca e clique em security groups
 - Copie o DNS name do EFS e guarde em algum editor de texto.
 
 ## 8. Criação das instâncias EC2
+
 É necessário criar duas instâncias para essse projeto
-### 8.1 Instância em subnet pública
 
-
+### 8.1 Instância em subnet pública (Bastion Host)
+- No menu EC2-Selecione instances -> Create Instances
+- Adicione o nome e tags necessárias
+- Selecione Amazon AMI
+- Selecione o tipo de instância, no caso utilizei t2.micro
+- Chave .ppk para conectar via PuTTY
+- Selecione o sg-EC2
+- Selecione uma subnet pública, ex public1-us-east-1a
+- Habilite o IP-público
+- Crie a instância
+  
 ### 8.2 Instância em subnet privada
+- No menu EC2-Selecione instances -> Create Instances
+- Adicione o nome e tags necessárias
+- Selecione Amazon AMI
+- Selecione o tipo de instância, no caso utilizei t2.micro
+- Chave .pem para conectar via PuTTY
+    - A chave .pem vai ser usada para acessar a instância privada via SSH, que está em uma rede segura e só pode ser acessada a partir do Bastion Host.
+- Selecione o sg-ec2-private
+- Selecione uma subnet privada em uma AZ diferente, ex private2-us-east-1b
+- DESABILITE o IP-público
+- Crie a instância
+- Ao criar esta instância acesse:
+     - Actions -> Networking -> Connect RDS database
+
+### 8.3 Conexão o configuração das instâncias 
+Conecte-se ao Bastion Host(Instância pública) via PuTTY
+- Salve a chave .pem da outra instancia
+    - Pode ser feito através editor de texto nano do bastion host
+- Defina as permissões necessárias para a chave .pem
+- Após salvar a chave .pem no bastion host conecte-se a instância privada via ssh
+``` bash
+ssh -i "nome-da-chave.pem" usuariod@endereco-ip-privado
+```
+- Ao acessar a a instância privada execute os comandos abaixos para Atualizar o sistema e instalar o docker
+``` bash
+yum update -y
+yum install -y docker
+```
+- 
+```bash
+yum install -y docker
+
+# Inicia e habilita o Docker
+systemctl start docker
+systemctl enable docker
+
+# Verifica a instalação do Docker deu certo
+docker --version
+````
+- 
+
+
 
 ## 9. Load balancer
 - Digite EC2 na área de busca e clique em Load balancers
@@ -164,7 +223,61 @@ Digite EC2 na área de busca e clique em security groups
   - Em Network mapping
        -Selecione a vpc e as duas subnets públicas
   - Em Security Groups escolha o LoadBalancer
+  - Em Listeners and routing : Crie um novo Target Group
+      - Target type: Instances
+      - Name: escolha um nome
+      - Protocol HTTP : Port 80
+       - Adicione o TG a instância que está rodando o wordpress
+  - Adicione o Target Group ao ALB
+  - Selecione Create Load Balancer
+  - Copie o DNS name do ALB e cole no navegador de sua preferência deve aparecer a página de configuração do Wordpress
 
+![wp](imagens-aws/WordPress.JPG)
+  
+### 10. Auto Scaling Group
+### 10.1 Criar um launch template
+Antes de criar o ASG é necessário criar um launch template no consolo ec2
+  - Digite o nome
+  - Escolha a AMI
+     - Escolha o security group que tem como inboud HTTP e MYSQL/Aurora: launch template
+     - Em advanced details cole esse script para automatizar a configuração da intância ec2
+```bash
+#!/bin/bash
+# Atualiza o sistema
+sudo dnf update -y
+
+# Instala dependências necessárias
+sudo dnf install -y dnf-plugins-core
+
+# Adiciona e instala o Docker
+sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo dnf install docker-ce docker-ce-cli containerd.io -y
+
+# Inicia e habilita o Docker
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Executa o contêiner WordPress com Docker
+sudo docker run -d --name wordpress \
+  -p 80:80 \
+  -e WORDPRESS_DB_HOST=(EndpointDoRDS) \
+  -e WORDPRESS_DB_USER= #User do RDS \
+  -e WORDPRESS_DB_PASSWORD=#Senha do RDS \
+  -e WORDPRESS_DB_NAME=#Nome do RDS \
+  --mount type=bind,source=/efs,target=/var/www/html \
+  wordpress:latest
+```
+
+### 10.2 Criar Auto Scaling Group
+- Digite o nome do ASG
+- Selecione o Launch template criado no passo anterior
+- Configure a escala inicial do ASG
+- Selecione a VPC: wordPress
+- Selecione as subnets privadas: 1a e 1b
+- Load balancing
+   - Selecione o application Load Balancer criado anteriormente
+    - Configure a escabilidade das instâncias conforme a sua necessidade
+- Crie o Auto Scaling Group
 
   
   
