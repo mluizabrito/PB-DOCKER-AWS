@@ -274,7 +274,7 @@ SHOW DATABASES;
   
 ### 10. Auto Scaling Group
 ### 10.1 Criar um launch template
-Antes de criar o ASG é necessário criar um launch template no consolo ec2
+Antes de criar o ASG é necessário criar um launch template no console ec2
   - Digite o nome
   - Escolha a AMI
      - Escolha o security group que tem como inboud HTTP e MYSQL/Aurora: launch template
